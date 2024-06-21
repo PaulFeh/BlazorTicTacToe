@@ -1,0 +1,116 @@
+﻿@page "/tictactoe"
+
+<h3>Tic Tac Toe</h3>
+<p>@message</p>
+<div class="board">
+    @for (int i = 0; i < 9; i++)
+    {
+        int index = i;
+        <div class="cell" @onclick="() => MakeMove(index)">
+            @DisplayCell(board[i])
+        </div>
+    }
+</div>
+<button @onclick="ResetGame">Reset Game</button>
+
+<style>
+    .board {
+        display: grid;
+        grid-template-columns: repeat(3, 100px);
+        grid-gap: 5px;
+        width: 315px;
+        margin: 20px auto;
+    }
+
+    .cell {
+        width: 100px;
+        height: 100px;
+        background-color: #f0f0f0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 2em;
+        cursor: pointer;
+        border: 1px solid #000000;
+    }
+</style>
+
+@code {
+    private char[] board = new char[9];
+    private char currentPlayer = 'X';
+    private bool gameOver = false;
+    private string message = "Player X's turn";
+
+    protected override void OnInitialized()
+    {
+        ResetGame();
+    }
+
+    private void MakeMove(int index)
+    {
+        if (gameOver || board[index] != '\0')
+            return;
+
+        board[index] = currentPlayer;
+
+        if (CheckWin())
+        {
+            gameOver = true;
+            message = $"Player {currentPlayer} wins!";
+        }
+        else if (IsBoardFull())
+        {
+            gameOver = true;
+            message = "It's a draw!";
+        }
+        else
+        {
+            currentPlayer = (currentPlayer == 'X') ? 'O' : 'X';
+            message = $"Player {currentPlayer}'s turn";
+        }
+    }
+
+    private bool CheckWin()
+    {
+        int[][] winningCombinations = new int[][]
+        {
+            new int[] {0, 1, 2}, new int[] {3, 4, 5}, new int[] {6, 7, 8}, // Rows
+            new int[] {0, 3, 6}, new int[] {1, 4, 7}, new int[] {2, 5, 8}, // Columns
+            new int[] {0, 4, 8}, new int[] {2, 4, 6} // Diagonals
+        };
+
+        foreach (var combination in winningCombinations)
+        {
+            if (board[combination[0]] != '\0' &&
+                board[combination[0]] == board[combination[1]] &&
+                board[combination[1]] == board[combination[2]])
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private bool IsBoardFull()
+    {
+        return !board.Contains('\0');
+    }
+
+    private void ResetGame()
+    {
+        board = new char[9]; // Initialize the board with empty characters
+        for (int i = 0; i < board.Length; i++)
+        {
+            board[i] = '\0'; // Set each cell to the null character to clear the board
+        }
+        currentPlayer = 'X';
+        gameOver = false;
+        message = "Player X's turn";
+    }
+
+    private string DisplayCell(char cell)
+    {
+        return cell == '\0' ? "" : cell.ToString();
+    }
+}
